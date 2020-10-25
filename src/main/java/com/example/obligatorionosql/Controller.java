@@ -45,11 +45,14 @@ public class Controller {
     @RequestMapping(value= "/crearcomentario/{texto}/{email}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public void crearComentario(String texto, String email) {
+            if(texto.length()>256){
+                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Texto mayor a 256");
+            }
+
             ObjectId userId = getUserId(email);
 
             Comentario comentario = new Comentario(texto, userId);
             ds.save(comentario);
-
     }
 
     private ObjectId getUserId(String email){
@@ -63,6 +66,7 @@ public class Controller {
 
         DBObject user = collection.find(searchQuery).next();
         return new ObjectId(((BasicDBObject) user).getString("_id"));
+        
     }
 
     private boolean existeUser(String email){
