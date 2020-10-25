@@ -32,6 +32,10 @@ public class Controller {
     @ResponseStatus(HttpStatus.OK)
     public void crearUsuario(String email){
 
+        if(existeUser(email)){
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Ya existe usuario");
+        }
+
         Usuario usuario = new Usuario(email);
 
         morphia.createDatastore(mongoClient, DBName).save(usuario);
@@ -59,6 +63,19 @@ public class Controller {
 
         DBObject user = collection.find(searchQuery).next();
         return new ObjectId(((BasicDBObject) user).getString("_id"));
-        
     }
+
+    private boolean existeUser(String email){
+        DBCollection collection = ds.getCollection(Usuario.class);
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("email", email);
+
+        if(!collection.find(searchQuery).hasNext()) {
+            return false;
+        }
+
+        DBObject user = collection.find(searchQuery).next();
+        return true;
+    }
+
 }
