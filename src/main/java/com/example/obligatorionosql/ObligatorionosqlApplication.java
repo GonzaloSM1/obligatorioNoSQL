@@ -6,7 +6,10 @@ import models.Comentario;
 import models.Emocion;
 import models.Usuario;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
 public class ObligatorionosqlApplication {
@@ -15,15 +18,11 @@ public class ObligatorionosqlApplication {
     {
         SpringApplication.run(ObligatorionosqlApplication.class, args);
 
-        MongoClient mongoClient = new MongoClient();
         Morphia morphia = new Morphia();
         morphia.map(Usuario.class);
         morphia.map(Comentario.class);
         morphia.map(Emocion.class);
-
-        Usuario usuario = new Usuario("juancito69@shemale.com");
-
-        morphia.createDatastore(mongoClient, "miniTwitter").save(usuario);
+        
     }
 
 }
