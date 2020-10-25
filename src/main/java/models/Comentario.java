@@ -4,15 +4,16 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import org.bson.types.ObjectId;
 
-@Entity
+@Entity("models.Comentario")
 public class Comentario {
     @Id
     private ObjectId id;
     private String texto;
+    private ObjectId userid;
 
-    public Comentario(String texto, Usuario usuario) {
+    public Comentario(String texto, ObjectId userid) {
         this.texto = texto;
-        this.usuario = usuario;
+        this.userid = userid;
     }
 
     public String getTexto() {
@@ -23,14 +24,12 @@ public class Comentario {
         this.texto = texto;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public ObjectId getUsuario() {
+        return userid;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setUsuario(ObjectId userid) {
+        this.userid = userid;
     }
-
-    private Usuario usuario;
 
 }
