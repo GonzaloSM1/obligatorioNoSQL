@@ -6,6 +6,7 @@ import dev.morphia.Morphia;
 import dev.morphia.query.Query;
 import dev.morphia.query.internal.MorphiaCursor;
 import io.swagger.models.Model;
+import models.DtLeerComentario;
 import models.Usuario;
 import models.Comentario;
 import models.DtComentario;
@@ -122,4 +123,58 @@ public class Controller {
 
     }
 
+    @RequestMapping(value= "/leercomentario/{comId}", method = RequestMethod.GET, produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public DtLeerComentario leerComentario(String comId) {
+
+        ObjectId objIdComId = null;
+
+        if(comId == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El id no puede ser vacío");
+
+        try {
+            objIdComId = new ObjectId(comId);
+        }catch(Exception e)
+        {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El id ingresado no corresponde a un tipo válido (ObjectId)");
+        }
+
+        //Exista comentario
+        if(!existeConentario(objIdComId))
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el comentario");
+
+        //Obtengo datos de comentario
+        DBCollection collection = ds.getCollection(Comentario.class);
+
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("_id", objIdComId);
+
+        DBObject comentario = collection.find(searchQuery).next();
+
+        //Obtengo texto del comentario
+        String text = (((BasicDBObject) comentario).getString("texto"));
+
+        //Obtengo datos del usuario
+        ObjectId usrId = new ObjectId( ((BasicDBObject) comentario).getString("userid"));
+
+        //Cantidad de meGusta
+        int meGusta = 1;
+        int noMeGusta = 79014;
+
+        return new DtLeerComentario(usrId.toString(), comId, text, meGusta, noMeGusta);
+
+    }
+
+    private boolean existeConentario(ObjectId comId){
+        DBCollection collection = ds.getCollection(Comentario.class);
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("_id", comId);
+
+        if(!collection.find(searchQuery).hasNext()) {
+            return false;
+        }
+
+        DBObject comentario = collection.find(searchQuery).next();
+        return true;
+    }
 }
