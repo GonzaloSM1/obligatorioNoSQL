@@ -36,9 +36,11 @@ public class Controller {
     @ResponseStatus(HttpStatus.OK)
     public void crearUsuario(String email){
 
-        if(existeUser(email)){
+        if(email == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El email no puede ser vacío");
+
+        if(existeUser(email))
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Ya existe usuario");
-        }
 
         Usuario usuario = new Usuario(email);
 
@@ -49,46 +51,29 @@ public class Controller {
     @RequestMapping(value= "/crearcomentario/{texto}/{email}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public void crearComentario(String texto, String email) {
-            if(texto.length()>256){
-                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Texto mayor a 256");
-            }
 
-            ObjectId userId = getUserId(email);
+        if(texto == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El texto no puede ser vacío");
 
-            Comentario comentario = new Comentario(texto, userId);
-            ds.save(comentario);
-    }
+        if(email == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El email no puede ser vacío");
 
-    private ObjectId getUserId(String email){
-        DBCollection collection = ds.getCollection(Usuario.class);
-        BasicDBObject searchQuery = new BasicDBObject();
-        searchQuery.put("email", email);
-
-        if(!collection.find(searchQuery).hasNext()) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario");
+        if(texto.length()>256){
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Texto mayor a 256");
         }
 
-        DBObject user = collection.find(searchQuery).next();
-        return new ObjectId(((BasicDBObject) user).getString("_id"));
-        
+        ObjectId userId = getUserId(email);
+
+        Comentario comentario = new Comentario(texto, userId);
+        ds.save(comentario);
     }
 
-    private boolean existeUser(String email){
-        DBCollection collection = ds.getCollection(Usuario.class);
-        BasicDBObject searchQuery = new BasicDBObject();
-        searchQuery.put("email", email);
-
-        if(!collection.find(searchQuery).hasNext()) {
-            return false;
-        }
-
-        DBObject user = collection.find(searchQuery).next();
-        return true;
-    }
-
-    @RequestMapping(value= "/listarComentariosUsuario/{email}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value= "/listarcomentariosusuario/{email}", method = RequestMethod.GET, produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public List<DtComentario> listarComentariosUsuario(String email) {
+        if(email == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El email no puede ser vacío");
+
         List<DtComentario> ListaComent = new ArrayList<>();
 
         if (existeUser(email)) {
@@ -163,6 +148,33 @@ public class Controller {
 
         return new DtLeerComentario(usrId.toString(), comId, text, meGusta, noMeGusta);
 
+    }
+
+    private ObjectId getUserId(String email){
+        DBCollection collection = ds.getCollection(Usuario.class);
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("email", email);
+
+        if(!collection.find(searchQuery).hasNext()) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario");
+        }
+
+        DBObject user = collection.find(searchQuery).next();
+        return new ObjectId(((BasicDBObject) user).getString("_id"));
+
+    }
+
+    private boolean existeUser(String email){
+        DBCollection collection = ds.getCollection(Usuario.class);
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("email", email);
+
+        if(!collection.find(searchQuery).hasNext()) {
+            return false;
+        }
+
+        DBObject user = collection.find(searchQuery).next();
+        return true;
     }
 
     private boolean existeConentario(ObjectId comId){
