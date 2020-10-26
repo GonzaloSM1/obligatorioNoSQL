@@ -89,29 +89,37 @@ public class Controller {
     @ResponseStatus(HttpStatus.OK)
     public List<DtComentario> listarComentariosUsuario(String email) {
         List<DtComentario> ListaComent = new ArrayList<>();
+
         if (existeUser(email)) {
+
             ObjectId userid = getUserId(email);
             DBCollection collection = ds.getCollection(Comentario.class);
+
             BasicDBObject searchQuery = new BasicDBObject();
             searchQuery.put("userid", userid);
-            //System.out.println(collection.find(searchQuery));
+
             List<DBObject> comentarios = collection.find(searchQuery).toArray();
-            System.out.println(userid);
+
             if(comentarios.size()==0) {
                 throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No tiene comentarios");
             }
+
             for (DBObject coment : comentarios) {
                 ObjectId comid = new ObjectId( ((BasicDBObject) coment).getString("_id"));
-                System.out.println(comid);
+
                 String text = (((BasicDBObject) coment).getString("texto"));
+
                 DtComentario dtcom = new DtComentario(userid.toString(),comid.toString(),text);
-                System.out.println(comid.toString());
+
                 ListaComent.add(dtcom);
             }
+
             return ListaComent;
+
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "El usuario no existe");
         }
 
     }
+
 }
