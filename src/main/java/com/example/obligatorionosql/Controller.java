@@ -3,10 +3,12 @@ package com.example.obligatorionosql;
 import com.mongodb.*;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
+import dev.morphia.query.Query;
 import dev.morphia.query.internal.MorphiaCursor;
 import io.swagger.models.Model;
 import models.Usuario;
 import models.Comentario;
+import models.DtComentario;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -82,4 +85,33 @@ public class Controller {
         return true;
     }
 
+    @RequestMapping(value= "/listarComentariosUsuario/{email}", method = RequestMethod.GET, produces = "application/json")
+    @ResponseStatus(HttpStatus.OK)
+    public List<DtComentario> listarComentariosUsuario(String email) {
+        List<DtComentario> ListaComent = new ArrayList<>();
+        if (existeUser(email)) {
+            ObjectId userid = getUserId(email);
+            DBCollection collection = ds.getCollection(Comentario.class);
+            BasicDBObject searchQuery = new BasicDBObject();
+            searchQuery.put("userid", userid);
+            //System.out.println(collection.find(searchQuery));
+            List<DBObject> comentarios = collection.find(searchQuery).toArray();
+            System.out.println(userid);
+            if(comentarios.size()==0) {
+                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No tiene comentarios");
+            }
+            for (DBObject coment : comentarios) {
+                ObjectId comid = new ObjectId( ((BasicDBObject) coment).getString("_id"));
+                System.out.println(comid);
+                String text = (((BasicDBObject) coment).getString("texto"));
+                DtComentario dtcom = new DtComentario(userid.toString(),comid.toString(),text);
+                System.out.println(comid.toString());
+                ListaComent.add(dtcom);
+            }
+            return ListaComent;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "El usuario no existe");
+        }
+
+    }
 }
