@@ -1,5 +1,4 @@
 package models;
-import org.bson.types.ObjectId;
 
 public class DtComentario {
     private String comId;
