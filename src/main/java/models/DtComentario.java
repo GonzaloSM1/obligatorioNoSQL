@@ -2,13 +2,11 @@ package models;
 import org.bson.types.ObjectId;
 
 public class DtComentario {
-    private String usrId;
     private String comId;
     private String comText;
 
 
-    public DtComentario(String usrId, String comId, String comText) {
-        this.usrId = usrId;
+    public DtComentario(String comId, String comText) {
         this.comId = comId;
         this.comText = comText;
 
@@ -22,7 +20,4 @@ public class DtComentario {
         return comText;
     }
 
-    public String getUsrId() {
-        return usrId;
-    }
 }

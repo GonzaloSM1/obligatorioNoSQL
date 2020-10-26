@@ -10,6 +10,7 @@ import models.DtLeerComentario;
 import models.Usuario;
 import models.Comentario;
 import models.DtComentario;
+import models.DtComentarioPers;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -70,11 +71,11 @@ public class Controller {
 
     @RequestMapping(value= "/listarcomentariosusuario/{email}", method = RequestMethod.GET, produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public List<DtComentario> listarComentariosUsuario(String email) {
+    public DtComentarioPers listarComentariosUsuario(String email) {
         if(email == null)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El email no puede ser vacío");
 
-        List<DtComentario> ListaComent = new ArrayList<>();
+        List<DtComentario> listaComent = new ArrayList<>();
 
         if (existeUser(email)) {
 
@@ -95,12 +96,13 @@ public class Controller {
 
                 String text = (((BasicDBObject) coment).getString("texto"));
 
-                DtComentario dtcom = new DtComentario(userid.toString(),comid.toString(),text);
+                DtComentario dtcom = new DtComentario(comid.toString(),text);
 
-                ListaComent.add(dtcom);
+                listaComent.add(dtcom);
             }
+            DtComentarioPers compers = new DtComentarioPers(userid.toString(),listaComent);
 
-            return ListaComent;
+            return compers;
 
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "El usuario no existe");
