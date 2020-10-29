@@ -141,12 +141,36 @@ public class Controller {
         ObjectId usrId = new ObjectId( ((BasicDBObject) comentario).getString("userid"));
 
         //Cantidad de meGusta
-        int meGusta = 1;
-        int noMeGusta = 79014;
+
+        List<Integer> a = cantidadEmociones(comId);
+        int meGusta = a.get(0);
+        int noMeGusta = a.get(1);
 
         return new DtLeerComentario(usrId.toString(), comId, text, meGusta, noMeGusta);
 
     }
+
+    @RequestMapping(value= "/agregarEmocion/{comId}/{email}/{emocion}", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    public void agregarEmocion(String comId, String userId, boolean emocion) {
+
+        ObjectId usrId;
+        if (!existeUser(userId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el usuario");
+        } else {
+                usrId = getUserId(userId);
+                ObjectId comentId;
+                if (!existeComentario(comId)) {
+                    throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el comentario");
+                } else {
+                        comentId = getCommentId(comId);
+                        Emocion emocion1 = new Emocion(emocion, usrId, comentId);
+                        ds.save(emocion1);
+                }
+        }
+
+    }
+
 
     private ObjectId getUserId(String email){
         DBCollection collection = ds.getCollection(Usuario.class);
@@ -200,19 +224,46 @@ public class Controller {
         return new ObjectId(((BasicDBObject) comment).getString("_id"));
     }
 
-
-
-
-    /*public DBObject getCommentId(String id){
+    private boolean existeConentario(ObjectId comId){
         DBCollection collection = ds.getCollection(Comentario.class);
         BasicDBObject searchQuery = new BasicDBObject();
-        searchQuery.put("email", email);
+        searchQuery.put("_id", comId);
 
         if(!collection.find(searchQuery).hasNext()) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario");
+            return false;
         }
 
-        DBObject user = collection.find(searchQuery).next();
-        return new ObjectId(((BasicDBObject) user).getString("_id"));
-    }*/
+        DBObject comentario = collection.find(searchQuery).next();
+        return true;
+    }
+
+    private List<Integer> cantidadEmociones(String idComentario){
+        List<Integer> megusta = new ArrayList<Integer>();
+        ObjectId com1 = getCommentId(idComentario);
+
+        DBCollection collection = ds.getCollection(Emocion.class);
+
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("commentId", com1);
+
+        List<DBObject> emociones = collection.find(searchQuery).toArray();
+        int gusta = 0;
+        int noGusta = 0;
+
+
+        for (DBObject emo : emociones) {
+            boolean meGusta = (((BasicDBObject) emo).getBoolean("meGusta"));
+            if (meGusta){
+                gusta ++;
+            }
+            if (!meGusta){
+                noGusta ++;
+            }
+
+        }
+        megusta.add(0, gusta);
+        megusta.add(1, noGusta);
+        return megusta;
+    }
+
 }
