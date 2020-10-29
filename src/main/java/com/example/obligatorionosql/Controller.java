@@ -4,6 +4,7 @@ import com.mongodb.*;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import models.DtLeerComentario;
+import models.Emocion;
 import models.Usuario;
 import models.Comentario;
 import models.DtComentario;
@@ -174,16 +175,44 @@ public class Controller {
         return true;
     }
 
-    private boolean existeConentario(ObjectId comId){
+    private boolean existeComentario(String id) {
         DBCollection collection = ds.getCollection(Comentario.class);
         BasicDBObject searchQuery = new BasicDBObject();
-        searchQuery.put("_id", comId);
+        ObjectId id1 = new ObjectId(id);
+        searchQuery.put("_id", id1);
+        if (!collection.find(searchQuery).hasNext()){
+            return false;
+
+        } else
+            return true;
+    }
+
+    private ObjectId getCommentId(String id) {
+        DBCollection collection = ds.getCollection(Comentario.class);
+        BasicDBObject searchQuery = new BasicDBObject();
+        ObjectId id1 = new ObjectId(id);
+        searchQuery.put("_id", id1);
+        if (!collection.find(searchQuery).hasNext()){
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe comentario");
+
+        }
+        DBObject comment = collection.find(searchQuery).next();
+        return new ObjectId(((BasicDBObject) comment).getString("_id"));
+    }
+
+
+
+
+    /*public DBObject getCommentId(String id){
+        DBCollection collection = ds.getCollection(Comentario.class);
+        BasicDBObject searchQuery = new BasicDBObject();
+        searchQuery.put("email", email);
 
         if(!collection.find(searchQuery).hasNext()) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario");
         }
 
-        DBObject comentario = collection.find(searchQuery).next();
-        return true;
-    }
+        DBObject user = collection.find(searchQuery).next();
+        return new ObjectId(((BasicDBObject) user).getString("_id"));
+    }*/
 }
