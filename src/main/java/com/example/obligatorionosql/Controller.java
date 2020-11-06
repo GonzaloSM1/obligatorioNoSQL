@@ -10,15 +10,24 @@ import models.Comentario;
 import models.DtComentario;
 import models.DtComentarioPers;
 import org.bson.types.ObjectId;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/")
@@ -28,6 +37,9 @@ public class Controller {
     private MongoClient mongoClient = new MongoClient();
     private String DBName = "miniTwitter";
     private Datastore ds = morphia.createDatastore(mongoClient, DBName);
+    private Jedis jedis = new Jedis();
+    private long cantcach = 5;
+
 
     @RequestMapping(value= "/crearusuario/{email}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
@@ -44,6 +56,17 @@ public class Controller {
         morphia.createDatastore(mongoClient, DBName).save(usuario);
 
     }
+  //  @CachePut(value="Comentario")
+
+//  @CachePut(value="#com:#id")
+//  @RequestMapping(method = RequestMethod.POST)
+//  @ResponseStatus(HttpStatus.OK)
+//  public Comentario savecache(Comentario com){
+//      // System.out.println(id);
+//      System.out.println(com);
+//      ds.save(com);
+//      return com;
+//  }
 
     @RequestMapping(value= "/crearcomentario/{texto}/{email}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
@@ -63,6 +86,9 @@ public class Controller {
 
         Comentario comentario = new Comentario(texto, userId);
         ds.save(comentario);
+        String key =  ds.getKey(comentario).getId().toString();
+        addCom(comentario, key);
+
     }
 
     @RequestMapping(value= "/listarcomentariosusuario/{email}", method = RequestMethod.GET, produces = "application/json")
@@ -106,6 +132,7 @@ public class Controller {
 
     }
 
+    @Cacheable(value = "/leercomentario/{comId}", key = "#comId")
     @RequestMapping(value= "/leercomentario/{comId}", method = RequestMethod.GET, produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public DtLeerComentario leerComentario(String comId) {
@@ -265,5 +292,34 @@ public class Controller {
         megusta.add(1, noGusta);
         return megusta;
     }
+
+    private void addCom(Comentario com, String key){
+        long cant = jedis.dbSize();
+
+      /*  if(cant >= cantcach){
+        //    jedis.zremrangeByRank('*',cantcach, cantcach+1);
+            jedis.clusterCountKeysInSlot(0);
+        }*/
+     /*   ScanParams params = new ScanParams();
+        params.match("key:Comentario");
+        // Use "0" to do a full iteration of the collection.
+        ScanResult<String> scanResult = jedis.scan("0", params);
+        List<String> keys = scanResult.getResult();
+        for (String temp : keys){
+            System.out.println(temp);
+        }*/
+            //jedis.set
+            //jedis.set("Comentario", key);
+            jedis.hset(key,"texto", com.getTexto());
+            jedis.hset(key,"usrId", com.getUsuario().toString());
+            jedis.hset(key,"cantMeGusta", "0");
+            jedis.hset(key,"cantNoMeGusta", "0");
+
+        System.out.println(jedis.dbSize());
+        //System.out.printf(jedis.hget("Key", "texto"));
+        //System.out.println(jedis.dbSize());
+
+    }
+
 
 }
