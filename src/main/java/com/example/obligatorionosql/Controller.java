@@ -10,10 +10,6 @@ import models.Comentario;
 import models.DtComentario;
 import models.DtComentarioPers;
 import org.bson.types.ObjectId;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,10 +20,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("/")
@@ -38,7 +31,9 @@ public class Controller {
     private String DBName = "miniTwitter";
     private Datastore ds = morphia.createDatastore(mongoClient, DBName);
     private Jedis jedis = new Jedis();
-    private long cantcach = 5;
+    private long cantcach = 10;
+    private long indcach = contadorcache();
+
 
 
     @RequestMapping(value= "/crearusuario/{email}", method = RequestMethod.POST)
@@ -132,7 +127,7 @@ public class Controller {
 
     }
 
-    @Cacheable(value = "/leercomentario/{comId}", key = "#comId")
+   // @Cacheable(value = "/leercomentario/{comId}", key = "#comId")
     @RequestMapping(value= "/leercomentario/{comId}", method = RequestMethod.GET, produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public DtLeerComentario leerComentario(String comId) {
@@ -150,9 +145,12 @@ public class Controller {
         }
 
         //Exista comentario
-        if(!existeConentario(objIdComId))
+        if(!existeComentario(objIdComId.toString()))
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el comentario");
 
+        if(jedis.exists(comId)){
+            return getComCache(comId);
+        }
         //Obtengo datos de comentario
         DBCollection collection = ds.getCollection(Comentario.class);
 
@@ -179,17 +177,20 @@ public class Controller {
 
     @RequestMapping(value= "/agregarEmocion/{comId}/{email}/{emocion}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
-    public void agregarEmocion(String comId, String userId, boolean emocion) {
+    public void agregarEmocion(String comId, String email, boolean emocion) {
 
         ObjectId usrId;
-        if (!existeUser(userId)) {
+        if (!existeUser(email)) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el usuario");
         } else {
-                usrId = getUserId(userId);
+                usrId = getUserId(email);
                 ObjectId comentId;
                 if (!existeComentario(comId)) {
                     throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el comentario");
                 } else {
+                        if(jedis.exists(comId)){
+                            emocCach(comId, emocion);
+                        }
                         comentId = getCommentId(comId);
                         Emocion emocion1 = new Emocion(emocion, usrId, comentId);
                         ds.save(emocion1);
@@ -205,7 +206,7 @@ public class Controller {
         searchQuery.put("email", email);
 
         if(!collection.find(searchQuery).hasNext()) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario");
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario2");
         }
 
         DBObject user = collection.find(searchQuery).next();
@@ -226,7 +227,11 @@ public class Controller {
         return true;
     }
 
+
     private boolean existeComentario(String id) {
+        if(jedis.exists(id.toString())){
+            return true;
+        }
         DBCollection collection = ds.getCollection(Comentario.class);
         BasicDBObject searchQuery = new BasicDBObject();
         ObjectId id1 = new ObjectId(id);
@@ -251,18 +256,7 @@ public class Controller {
         return new ObjectId(((BasicDBObject) comment).getString("_id"));
     }
 
-    private boolean existeConentario(ObjectId comId){
-        DBCollection collection = ds.getCollection(Comentario.class);
-        BasicDBObject searchQuery = new BasicDBObject();
-        searchQuery.put("_id", comId);
 
-        if(!collection.find(searchQuery).hasNext()) {
-            return false;
-        }
-
-        DBObject comentario = collection.find(searchQuery).next();
-        return true;
-    }
 
     private List<Integer> cantidadEmociones(String idComentario){
         List<Integer> megusta = new ArrayList<Integer>();
@@ -295,31 +289,68 @@ public class Controller {
 
     private void addCom(Comentario com, String key){
         long cant = jedis.dbSize();
+        if (cant >= cantcach) {
+            ScanParams params = new ScanParams();
+            params.match("*");
+            ScanResult<String> scanResult = jedis.scan("0", params);
+            List<String> keys = scanResult.getResult();
+            int max = Integer.MAX_VALUE;
+            String delkey = "";
+            for (String ky : keys) {
+                int var1 = Integer.parseInt(jedis.hget(ky, "index"));
+                if (var1 < max) {
+                    max = var1;
+                    delkey = ky;
+                }
+            }
+            System.out.print(delkey + "esta es la q borro \n");
+            System.out.print(indcach);
+            jedis.del(delkey);
+        }
 
-      /*  if(cant >= cantcach){
-        //    jedis.zremrangeByRank('*',cantcach, cantcach+1);
-            jedis.clusterCountKeysInSlot(0);
-        }*/
-     /*   ScanParams params = new ScanParams();
-        params.match("key:Comentario");
-        // Use "0" to do a full iteration of the collection.
-        ScanResult<String> scanResult = jedis.scan("0", params);
-        List<String> keys = scanResult.getResult();
-        for (String temp : keys){
-            System.out.println(temp);
-        }*/
-            //jedis.set
-            //jedis.set("Comentario", key);
             jedis.hset(key,"texto", com.getTexto());
             jedis.hset(key,"usrId", com.getUsuario().toString());
             jedis.hset(key,"cantMeGusta", "0");
             jedis.hset(key,"cantNoMeGusta", "0");
-
-        System.out.println(jedis.dbSize());
-        //System.out.printf(jedis.hget("Key", "texto"));
-        //System.out.println(jedis.dbSize());
-
+            String a = Long.toString(indcach);
+            jedis.hset(key,"index", a);
+            indcach++;
+    }
+    private long contadorcache(){
+        if (jedis.dbSize() != 0){
+            ScanParams params = new ScanParams();
+            params.match("*");
+            ScanResult<String> scanResult = jedis.scan("0", params);
+            List<String> keys = scanResult.getResult();
+            for (String ky : keys) {
+                int var1 = Integer.parseInt(jedis.hget(ky,"index"));
+                if (var1 > indcach){
+                    indcach = var1;
+                }
+            }
+            indcach++;
+            return indcach;
+        }else{
+            return 0;
+        }
+    }
+    private DtLeerComentario getComCache(String comid){
+        System.out.print("Tomo de cache");
+        return new DtLeerComentario(jedis.hget(comid,"usrId"), comid, jedis.hget(comid,"texto"), Integer.parseInt(jedis.hget(comid,"cantMeGusta")), Integer.parseInt(jedis.hget(comid,"cantNoMeGusta")));
     }
 
+    private void emocCach(String comid, Boolean emoc){
+        if(emoc){
+            int cmg = Integer.parseInt(jedis.hget(comid, "cantMeGusta"));
+            cmg++;
+            jedis.hset(comid, "cantMeGusta", Integer.toString(cmg));
+        }else{
+            int cng = Integer.parseInt(jedis.hget(comid, "cantNoMeGusta"));
+            cng++;
+            jedis.hset(comid, "cantNoMeGusta", Integer.toString(cng));
+        }
+        jedis.hset(comid, "index", Long.toString(indcach));
+        indcach++;
+    }
 
 }
