@@ -19,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import dev.morphia.query.Query;
+import dev.morphia.query.UpdateOperations;
 
 import java.util.*;
 
@@ -177,24 +179,60 @@ public class Controller {
 
     @RequestMapping(value= "/agregarEmocion/{comId}/{email}/{emocion}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
-    public void agregarEmocion(String comId, String email, boolean emocion) {
+    public void agregarEmocion(String comId, String userId, boolean emocion) {
 
         ObjectId usrId;
-        if (!existeUser(email)) {
+        ObjectId comentId;
+        if(comId == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El id del comentario no puede ser vacío");
+
+        if(userId == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El id del usuario no puede ser vacío");
+
+        if (!existeUser(userId)) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el usuario");
         } else {
-                usrId = getUserId(email);
-                ObjectId comentId;
-                if (!existeComentario(comId)) {
-                    throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el comentario");
+            usrId = getUserId(userId);
+
+            if (!existeComentario(comId)) {
+                throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el comentario");
+            } else {
+                comentId = getCommentId(comId);
+                DBCollection collection = ds.getCollection(Emocion.class);
+                BasicDBObject searchQuery = new BasicDBObject();
+                //BasicDBObject ops = new BasicDBObject();
+                BasicDBObject query = new BasicDBObject();
+                searchQuery.put("userId", usrId);
+                searchQuery.put("commentId", comentId);
+                Emocion emocion1 = new Emocion(emocion, usrId, comentId);
+                if (!collection.find(searchQuery).hasNext()){
+                    if(jedis.exists(comId)){
+                        emocCach(comId, emocion);
+                    }
+                    ds.save(emocion1);
                 } else {
-                        if(jedis.exists(comId)){
-                            emocCach(comId, emocion);
-                        }
-                        comentId = getCommentId(comId);
-                        Emocion emocion1 = new Emocion(emocion, usrId, comentId);
-                        ds.save(emocion1);
+                    Query<Emocion> query2 = ds.createQuery(Emocion.class);
+                    query2.and(
+                            query2.criteria("userId").equal(usrId),
+                            query2.criteria("commentId").equal(comentId)
+                    );
+
+                    DBCollection collection1 = ds.getCollection(Emocion.class);
+
+                    DBObject emoc = collection1.find(searchQuery).next();
+
+                    //Obtengo texto del comentario
+                    boolean meGusta = (((BasicDBObject) emoc).getBoolean("meGusta"));
+                    if(jedis.exists(comId)) {
+                        actemoCach(meGusta, comentId, emocion );
+                    }
+                    UpdateOperations ops = ds
+                            .createUpdateOperations(Emocion.class)
+                            .set("meGusta", emocion);
+                    ds.update(query2, (UpdateOperations<Query<Emocion>>) ops);
                 }
+
+            }
         }
 
     }
@@ -351,6 +389,32 @@ public class Controller {
         }
         jedis.hset(comid, "index", Long.toString(indcach));
         indcach++;
+    }
+    private void actemoCach(Boolean vmeGusta, ObjectId comid, Boolean nmeGusta){
+        if (vmeGusta == nmeGusta) {
+            jedis.hset(String.valueOf(comid), "index", Long.toString(indcach));
+            indcach++;
+        }else{
+            if(vmeGusta){
+                int cmg = Integer.parseInt(jedis.hget(String.valueOf(comid), "cantMeGusta"));
+                cmg--;
+                jedis.hset(String.valueOf(comid), "cantMeGusta", Integer.toString(cmg));
+                int cmng = Integer.parseInt(jedis.hget(String.valueOf(comid), "cantNoMeGusta"));
+                cmng++;
+                jedis.hset(String.valueOf(comid), "cantNoMeGusta", Integer.toString(cmng));
+            }else{
+                int cmg = Integer.parseInt(jedis.hget(String.valueOf(comid), "cantMeGusta"));
+                cmg++;
+                jedis.hset(String.valueOf(comid), "cantMeGusta", Integer.toString(cmg));
+                int cmng = Integer.parseInt(jedis.hget(String.valueOf(comid), "cantNoMeGusta"));
+                cmng--;
+                jedis.hset(String.valueOf(comid), "cantNoMeGusta", Integer.toString(cmng));
+            }
+        }
+
+
+
+
     }
 
 }
