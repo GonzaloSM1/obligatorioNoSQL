@@ -244,7 +244,7 @@ public class Controller {
         searchQuery.put("email", email);
 
         if(!collection.find(searchQuery).hasNext()) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario2");
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe usuario");
         }
 
         DBObject user = collection.find(searchQuery).next();
