@@ -1,0 +1,474 @@
+{
+	"info": {
+		"_postman_id": "1e2ba476-ec78-4822-97d7-ac3cad0f354e",
+		"name": "Obligatorio2NoSQL2020 Copy",
+		"description": "Api Documentation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Datos de prueba",
+			"item": [
+				{
+					"name": "1.DP1crearUsuario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/crearusuario/{email}?email=usuario1@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"crearusuario",
+								"{email}"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario1@gmail.com",
+									"description": "email"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.DP2crearUsuario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/crearusuario/{email}?email=usuario2@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"crearusuario",
+								"{email}"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario2@gmail.com",
+									"description": "email"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.DP3crearUsuario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/crearusuario/{email}?email=usuario3@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"crearusuario",
+								"{email}"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario3@gmail.com",
+									"description": "email"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.DP1crearComentario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/crearcomentario/{texto}/{email}?email=usuario1@gmail.com&texto=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"crearcomentario",
+								"{texto}",
+								"{email}"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario1@gmail.com",
+									"description": "email"
+								},
+								{
+									"key": "texto",
+									"value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ",
+									"description": "texto"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5.DP2crearComentario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/crearcomentario/{texto}/{email}?email=usuario2@gmail.com&texto=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"crearcomentario",
+								"{texto}",
+								"{email}"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario2@gmail.com",
+									"description": "email"
+								},
+								{
+									"key": "texto",
+									"value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ",
+									"description": "texto"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6.DP3crearComentario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/crearcomentario/{texto}/{email}?email=usuario1@gmail.com&texto=Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"crearcomentario",
+								"{texto}",
+								"{email}"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario1@gmail.com",
+									"description": "email"
+								},
+								{
+									"key": "texto",
+									"value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ",
+									"description": "texto"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7.DP1agregarEmocion",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/agregarEmocion/{comId}/{email}/{emocion}?comId=5fac78bf8a4a9a540f3594a0&emocion=0&userId=usuario1@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"agregarEmocion",
+								"{comId}",
+								"{email}",
+								"{emocion}"
+							],
+							"query": [
+								{
+									"key": "comId",
+									"value": "5fac78bf8a4a9a540f3594a0",
+									"description": "comId"
+								},
+								{
+									"key": "emocion",
+									"value": "0",
+									"description": "emocion"
+								},
+								{
+									"key": "userId",
+									"value": "usuario1@gmail.com",
+									"description": "userId"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8.DP1leerComentario",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/leercomentario/{comId}?comId=5fac78bf8a4a9a540f3594a0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"leercomentario",
+								"{comId}"
+							],
+							"query": [
+								{
+									"key": "comId",
+									"value": "5fac78bf8a4a9a540f3594a0",
+									"description": "comId"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9.DP1listarComentariosUsuario",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/listarcomentariosusuario/{email}?email=usuario1@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"listarcomentariosusuario",
+								"{email}"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "usuario1@gmail.com",
+									"description": "email"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "agregarEmocion",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/agregarEmocion/:comId/:email/:emocion?comId=<string>&emocion=<boolean>&userId=<string>",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"agregarEmocion",
+						":comId",
+						":email",
+						":emocion"
+					],
+					"query": [
+						{
+							"key": "comId",
+							"value": "<string>",
+							"description": "comId"
+						},
+						{
+							"key": "emocion",
+							"value": "<boolean>",
+							"description": "emocion"
+						},
+						{
+							"key": "userId",
+							"value": "<string>",
+							"description": "userId"
+						}
+					],
+					"variable": [
+						{
+							"key": "comId",
+							"value": ""
+						},
+						{
+							"key": "email",
+							"value": ""
+						},
+						{
+							"key": "emocion",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "crearComentario",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/crearcomentario/{texto}/{email}?email=<string>&texto=<string>",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"crearcomentario",
+						"{texto}",
+						"{email}"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "<string>",
+							"description": "email"
+						},
+						{
+							"key": "texto",
+							"value": "<string>",
+							"description": "texto"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "crearUsuario",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/crearusuario/{email}?email=<string>",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"crearusuario",
+						"{email}"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "<string>",
+							"description": "email"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "leerComentario",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/leercomentario/{comId}?comId=<string>",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"leercomentario",
+						"{comId}"
+					],
+					"query": [
+						{
+							"key": "comId",
+							"value": "<string>",
+							"description": "comId"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "listarComentariosUsuario",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/listarcomentariosusuario/{email}?email=<string>",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"listarcomentariosusuario",
+						"{email}"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "<string>",
+							"description": "email"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"id": "baseUrl",
+			"key": "baseUrl",
+			"value": "http://localhost:8080/",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
