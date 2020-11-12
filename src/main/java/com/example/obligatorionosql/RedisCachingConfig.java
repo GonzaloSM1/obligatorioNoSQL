@@ -19,7 +19,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration(proxyBeanMethods = false)
 @EnableCaching
-@RequiredArgsConstructor
 public class RedisCachingConfig extends CachingConfigurerSupport {
 
     private final RedisConnectionFactory connectionFactory;
@@ -28,11 +27,7 @@ public class RedisCachingConfig extends CachingConfigurerSupport {
         this.connectionFactory = connectionFactory;
     }
 
-/*    @Bean
-    @Override
-    public CacheErrorHandler errorHandler() {
-        return new CustomCacheErrorHandler();
-    }*/
+
 
     @Bean
     public ReactiveRedisTemplate<String, Comentario> reactiveJsonBookRedisTemplate(

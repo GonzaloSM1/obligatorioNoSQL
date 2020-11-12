@@ -9,8 +9,6 @@ public class Emocion {
     @Id
     private ObjectId Id;
     private boolean meGusta;
-    //private Usuario usuario;
-    //private Comentario comentario;
     private ObjectId userId;
     private ObjectId commentId;
 

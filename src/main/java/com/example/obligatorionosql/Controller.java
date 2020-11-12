@@ -53,17 +53,6 @@ public class Controller {
         morphia.createDatastore(mongoClient, DBName).save(usuario);
 
     }
-  //  @CachePut(value="Comentario")
-
-//  @CachePut(value="#com:#id")
-//  @RequestMapping(method = RequestMethod.POST)
-//  @ResponseStatus(HttpStatus.OK)
-//  public Comentario savecache(Comentario com){
-//      // System.out.println(id);
-//      System.out.println(com);
-//      ds.save(com);
-//      return com;
-//  }
 
     @RequestMapping(value= "/crearcomentario/{texto}/{email}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
@@ -129,7 +118,6 @@ public class Controller {
 
     }
 
-   // @Cacheable(value = "/leercomentario/{comId}", key = "#comId")
     @RequestMapping(value= "/leercomentario/{comId}", method = RequestMethod.GET, produces = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public DtLeerComentario leerComentario(String comId) {
@@ -180,28 +168,22 @@ public class Controller {
     @RequestMapping(value= "/agregarEmocion/{comId}/{email}/{emocion}", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public void agregarEmocion(String comId, String userId, boolean emocion) {
-
         ObjectId usrId;
         ObjectId comentId;
         if(comId == null)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El id del comentario no puede ser vacío");
-
         if(userId == null)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "El id del usuario no puede ser vacío");
-
         if (!existeUser(userId)) {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el usuario");
         } else {
             usrId = getUserId(userId);
-
             if (!existeComentario(comId)) {
                 throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "No existe el comentario");
             } else {
                 comentId = getCommentId(comId);
                 DBCollection collection = ds.getCollection(Emocion.class);
                 BasicDBObject searchQuery = new BasicDBObject();
-                //BasicDBObject ops = new BasicDBObject();
-                BasicDBObject query = new BasicDBObject();
                 searchQuery.put("userId", usrId);
                 searchQuery.put("commentId", comentId);
                 Emocion emocion1 = new Emocion(emocion, usrId, comentId);
@@ -216,11 +198,8 @@ public class Controller {
                             query2.criteria("userId").equal(usrId),
                             query2.criteria("commentId").equal(comentId)
                     );
-
                     DBCollection collection1 = ds.getCollection(Emocion.class);
-
                     DBObject emoc = collection1.find(searchQuery).next();
-
                     //Obtengo texto del comentario
                     boolean meGusta = (((BasicDBObject) emoc).getBoolean("meGusta"));
                     if(jedis.exists(comId)) {
@@ -341,8 +320,6 @@ public class Controller {
                     delkey = ky;
                 }
             }
-            System.out.print(delkey + "esta es la q borro \n");
-            System.out.print(indcach);
             jedis.del(delkey);
         }
 
@@ -373,7 +350,6 @@ public class Controller {
         }
     }
     private DtLeerComentario getComCache(String comid){
-        System.out.print("Tomo de cache");
         return new DtLeerComentario(jedis.hget(comid,"usrId"), comid, jedis.hget(comid,"texto"), Integer.parseInt(jedis.hget(comid,"cantMeGusta")), Integer.parseInt(jedis.hget(comid,"cantNoMeGusta")));
     }
 
@@ -411,10 +387,5 @@ public class Controller {
                 jedis.hset(String.valueOf(comid), "cantNoMeGusta", Integer.toString(cmng));
             }
         }
-
-
-
-
     }
-
 }
